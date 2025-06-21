@@ -18,7 +18,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   previewUrl,
 }) => {
   return (
-    <div className="rounded-xl overflow-hidden bg-[#1F1F1F] shadow-lg hover:shadow-2xl transition-shadow duration-300 group transform hover:-translate-y-1 hover:scale-[1.02] transition-transform duration-300 ease-out">
+    <div className="rounded-xl overflow-hidden bg-[#1F1F1F] shadow-lg hover:shadow-2xl transition-transform duration-300 group transform hover:-translate-y-1 hover:scale-[1.02] ease-out">
       {/* 📸 Project Image */}
       <div
         className="h-52 md:h-72 bg-center bg-cover relative"

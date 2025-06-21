@@ -3,9 +3,12 @@ import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const fromEmail = process.env.FROM_EMAIL;
+const fromEmail = process.env.FROM_EMAIL as string;
+if (!fromEmail) {
+  throw new Error("FROM_EMAIL environment variable is not set");
+}
 
-export async function POST(req, res) {
+export async function POST(req: Request) {
   const { email, subject, message } = await req.json();
   console.log(email, subject, message);
   try {
@@ -13,14 +16,12 @@ export async function POST(req, res) {
       from: fromEmail,
       to: [fromEmail, email],
       subject: subject,
-      react: (
-        <>
-          <h1>{subject}</h1>
-          <p>Thank you for contacting us!</p>
-          <p>New message submitted:</p>
-          <p>{message}</p>
-        </>
-      ),
+      html: `
+        <h1>${subject}</h1>
+        <p>Thank you for contacting us!</p>
+        <p>New message submitted:</p>
+        <p>${message}</p>
+      `,
     });
     return NextResponse.json(data);
   } catch (error) {
