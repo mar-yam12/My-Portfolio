@@ -1,43 +1,44 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 
-// Initialize Resend with API key
-const resend = new Resend(process.env.RESEND_API_KEY);
-
-// Validate FROM_EMAIL
+// ✅ TypeScript safe env access
+const resendApiKey = process.env.RESEND_API_KEY;
 const fromEmail = process.env.FROM_EMAIL;
-if (!fromEmail) {
-  throw new Error("FROM_EMAIL environment variable is not set");
+
+if (!resendApiKey || !fromEmail) {
+  throw new Error("Missing RESEND_API_KEY or FROM_EMAIL in env");
 }
 
-// API Route Handler
+const resend = new Resend(resendApiKey);
+
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { email, subject, message } = body;
+    const { email, subject, message } = await req.json();
 
-    // Simple validation
     if (!email || !subject || !message) {
-      return NextResponse.json({ error: "Missing required fields." }, { status: 400 });
+      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
+
+    const html = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+        <h1>${subject}</h1>
+        <p><strong>Thank you for contacting us!</strong></p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      </div>
+    `;
 
     const data = await resend.emails.send({
       from: fromEmail as string,
       to: [fromEmail, email],
       subject,
-      html: `
-        <div style="font-family: sans-serif;">
-          <h2>${subject}</h2>
-          <p><strong>From:</strong> ${email}</p>
-          <p><strong>Message:</strong></p>
-          <p>${message}</p>
-        </div>
-      `,
+      html, // ✅ Using plain HTML string instead of JSX
     });
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    console.error("Error sending email:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    console.error("Email send failed:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
